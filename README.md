@@ -16,3 +16,52 @@ Sistem manajemen jadwal produksi garmen yang dirancang khusus untuk mengelola ef
 - **Frontend**: Tailwind CSS, Vite, Blade Components
 - **Database**: MySQL / MariaDB
 - **Libraries**: Axios (API Calls), SweetAlert2 (Pop-ups), Carbon (Date Manipulation)
+
+## 📦 Instalasi
+
+### Persyaratan Sistem
+- PHP >= 8.1
+- Composer
+- Node.js >= 16
+- MySQL / MariaDB
+
+### Langkah Instalasi
+1. **Clone Repository**:
+   ```bash
+   git clone <url-repository>
+   cd sewing-project
+   ```
+
+2. **Install Dependencies PHP**:
+   ```bash
+   composer install
+   ```
+
+3. **Install Dependencies JavaScript**:
+   ```bash
+   npm install
+   ```
+
+4. **Setup Environment**:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+5. **Setup Database**:
+   Konfigurasi database di file `.env`, kemudian jalankan:
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
+
+6. **Build Assets**:
+   ```bash
+   npm run build
+   ```
+
+7. **Jalankan Aplikasi**:
+   ```bash
+   php artisan serve
+   ```
+   Aplikasi akan berjalan di `http://localhost:8000`
