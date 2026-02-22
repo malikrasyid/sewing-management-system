@@ -129,4 +129,60 @@ class ScheduleService
 
         return $distribution;
     }
+
+    public function getAllSchedules($filters = [])
+    {
+        $query = Schedule::with(['line', 'order']);
+
+        // Filter Universal Search
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->whereHas('order', function($q2) use ($search) {
+                    $q2->where('order_number', 'LIKE', "%$search%")
+                    ->orWhere('item_name', 'LIKE', "%$search%");
+                })
+                ->orWhereHas('line', function($q2) use ($search) {
+                    $q2->where('name', 'LIKE', "%$search%");
+                });
+            });
+        }
+
+        // Filter per Line
+        if (!empty($filters['line_id'])) {
+            $query->where('line_id', $filters['line_id']);
+        }
+
+        // Filter per Tanggal (Schedule yang sedang berjalan pada tanggal tersebut)
+        if (!empty($filters['date'])) {
+            $date = $filters['date'];
+            $query->where('start_sewing', '<=', $date)
+                ->where('finish_sewing', '>=', $date);
+        }
+
+        return $query->orderBy('start_sewing', 'asc')->get();
+    }
+
+    public function updateSchedule($id, array $data)
+    {
+        $schedule = Schedule::findOrFail($id);
+
+        // Hitung ulang target harian berdasarkan data baru
+        $calc = $this->calculateDailyTarget(
+            $data['qty_total_target'], 
+            $data['start_sewing'], 
+            $data['finish_sewing']
+        );
+
+        $data['daily_target_output'] = $calc['daily'];
+
+        $schedule->update($data);
+        return $schedule;
+    }
+
+    public function deleteSchedule($id)
+    {
+        $schedule = Schedule::findOrFail($id);
+        return $schedule->delete();
+    }
 }

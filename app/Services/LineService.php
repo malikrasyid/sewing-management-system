@@ -16,6 +16,13 @@ class LineService
         return Line::create($data);
     }
 
+    public function updateLine($id, array $data)
+    {
+        $line = Line::findOrFail($id);
+        $line->update($data);
+        return $line;
+    }
+
     public function deleteLine($id)
     {
         return Line::destroy($id);

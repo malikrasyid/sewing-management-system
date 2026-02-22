@@ -31,6 +31,16 @@ class LineController extends Controller
         return response()->json(['message' => 'Line berhasil ditambahkan!']);
     }
 
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:lines,name,'.$id,
+        ]);
+
+        $this->lineService->updateLine($id, $validated);
+        return response()->json(['message' => 'Line updated successfully!']);
+    }
+
     public function destroy($id)
     {
         $this->lineService->deleteLine($id);

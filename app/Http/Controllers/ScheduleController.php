@@ -23,25 +23,15 @@ class ScheduleController extends Controller
      */
     public function index(Request $request)
     {
-        $lines = Line::all();
-        $orders = Order::all();
-        $query = Schedule::with(['line', 'order']);
+        // Kirim semua input request sebagai filter ke service
+        $schedules = $this->scheduleService->getAllSchedules($request->all());
+        
+        // Tetap kirim master data untuk dropdown line di filter bar
+        $lines = \App\Models\Line::all();
+        $orders = \App\Models\Order::all(); 
 
-        if ($request->filled('line_id')) {
-            $query->where('line_id', $request->line_id);
-        }
-
-        if ($request->filled('search')) {
-            $query->whereHas('order', function($q) use ($request) {
-                $q->where('order_number', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $schedules = $query->orderBy('start_sewing', 'asc')->get();
-
-        return view('schedules.index', compact('lines', 'orders', 'schedules'));
+        return view('schedules.index', compact('schedules', 'lines', 'orders'));
     }
-
     /**
      * Store schedule baru (AJAX ready)
      */
@@ -89,6 +79,36 @@ class ScheduleController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'line_id' => 'required|exists:lines,id',
+            'order_id' => 'required|exists:orders,id',
+            'start_sewing' => 'required|date',
+            'finish_sewing' => 'required|date|after_or_equal:start_sewing',
+            'qty_total_target' => 'required|integer|min:1',
+        ]);
+
+        $this->scheduleService->updateSchedule($id, $validated);
+        return response()->json(['message' => 'Jadwal berhasil diperbarui!']);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $this->scheduleService->deleteSchedule($id);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Jadwal produksi berhasil dihapus!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menghapus jadwal.'
+            ], 500);
         }
     }
 }

@@ -32,6 +32,17 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order berhasil ditambahkan']);
     }
 
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'order_number' => 'required|string|unique:orders,order_number,'.$id,
+            'item_name' => 'required|string|max:255',
+        ]);
+
+        $this->orderService->updateOrder($id, $validated);
+        return response()->json(['message' => 'Order berhasil diperbarui!']);
+    }
+
     public function destroy($id)
     {
         $this->orderService->deleteOrder($id);
